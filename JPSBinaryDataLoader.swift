@@ -7,7 +7,7 @@ import Foundation
 
 public class JPSBinaryDataLoader
 {
-    internal class func inputStream(forResource resource: String, ofType type: String) -> InputStream
+    public class func inputStream(forResource resource: String, ofType type: String) -> InputStream
     {
         let path = Bundle.main.path(forResource: resource, ofType: type)
         let inputStream = InputStream(fileAtPath: path!)
@@ -15,7 +15,7 @@ public class JPSBinaryDataLoader
         return inputStream!
     }
     
-    internal class func data(forInputStream inputStream: InputStream, bufferSize: Int) -> NSData
+    public class func data(forInputStream inputStream: InputStream, bufferSize: Int) -> NSData
     {
         var buffer = [UInt8](repeating: 0, count: bufferSize)
         
@@ -38,7 +38,7 @@ public class JPSBinaryDataLoader
         return (data as! NSData)
     }
     
-    internal class func data(forResource resource: String, ofType type: String, bufferSize: Int) -> NSData
+    public class func data(forResource resource: String, ofType type: String, bufferSize: Int) -> NSData
     {
         let inputStream = JPSBinaryDataLoader.inputStream(forResource: resource, ofType: type)
         inputStream.schedule(in: RunLoop.current, forMode: .defaultRunLoopMode)
@@ -51,7 +51,7 @@ public class JPSBinaryDataLoader
         return data
     }
     
-    internal class func load(resource: String, ofType type: String, bufferSize: Int, numberOfItems: Int, dataOffset: Int, dataSize: Int) -> [Data]
+    public class func load(resource: String, ofType type: String, bufferSize: Int, numberOfItems: Int, dataOffset: Int, dataSize: Int) -> [Data]
     {
         let data = JPSBinaryDataLoader.data(forResource: resource, ofType: type, bufferSize: bufferSize)
         
