@@ -7,15 +7,22 @@ import Foundation
 
 public class JPSBinaryDataLoader
 {
-    public class func inputStream(forResource resource: String, ofType type: String) -> InputStream
-    {
-        let path = Bundle.main.path(forResource: resource, ofType: type)
-        let inputStream = InputStream(fileAtPath: path!)
-        
-        return inputStream!
+    enum JPSBinaryDataLoaderError : Error {
+        case RuntimeError(String)
     }
     
-    public class func data(forInputStream inputStream: InputStream, bufferSize: Int) -> NSData
+    public class func inputStream(forResource resource: String, ofType type: String) throws -> InputStream
+    {
+        let resourcePath = Bundle.main.path(forResource: resource, ofType: type)
+        
+        guard let path = resourcePath else {
+            throw JPSBinaryDataLoaderError.RuntimeError("\(resource).\(type) not found.")
+        }
+        
+        return InputStream(fileAtPath: path)!
+    }
+    
+    public class func data(forInputStream inputStream: InputStream, bufferSize: Int) -> Data
     {
         var buffer = [UInt8](repeating: 0, count: bufferSize)
         
@@ -35,12 +42,13 @@ public class JPSBinaryDataLoader
         outputStream.close()
         outputStream.remove(from: RunLoop.current, forMode: .defaultRunLoopMode)
         
-        return (data as! NSData)
+        return (data as! Data)
     }
     
-    public class func data(forResource resource: String, ofType type: String, bufferSize: Int) -> NSData
+    public class func data(forResource resource: String, ofType type: String, bufferSize: Int) throws -> Data
     {
-        let inputStream = JPSBinaryDataLoader.inputStream(forResource: resource, ofType: type)
+        let inputStream = try JPSBinaryDataLoader.inputStream(forResource: resource, ofType: type)
+        
         inputStream.schedule(in: RunLoop.current, forMode: .defaultRunLoopMode)
         inputStream.open()
         
@@ -51,16 +59,16 @@ public class JPSBinaryDataLoader
         return data
     }
     
-    public class func load(resource: String, ofType type: String, bufferSize: Int, numberOfItems: Int, dataOffset: Int, dataSize: Int) -> [Data]
+    public class func load(resource: String, ofType type: String, bufferSize: Int, numberOfItems: Int, dataOffset: Int, dataSize: Int) throws -> [Data]
     {
-        let data = JPSBinaryDataLoader.data(forResource: resource, ofType: type, bufferSize: bufferSize)
+        let data = try JPSBinaryDataLoader.data(forResource: resource, ofType: type, bufferSize: bufferSize)
         
         var items = [Data]()
         
         for i in 0..<numberOfItems
         {
-            let dataRange = NSMakeRange(dataOffset + (dataSize * Int(i)), dataSize)
-            let data = data.subdata(with: dataRange)
+            let dataRange = Range(uncheckedBounds: (dataOffset + (dataSize * Int(i)), dataSize))
+            let data = data.subdata(in: dataRange)
             items.append(data)
         }
         
